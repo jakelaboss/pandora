@@ -2,25 +2,27 @@
   (:require [pandora.core :refer :all]
             [clojure.test :refer :all]))
 
-(defp test [] [y 100]
-  (set y (+ y 1)))
+(defp test [x]
+  [y 100] ; y is a pandoric variable
+  (set y (+ y x)))
 ;; => #'pandora.core-test/test
 
-(test)
-;; => 101
+(test 10)
+;; => 110
 
 (future
   (dotimes [x 1000000]
-    (test)))
-;; => #future[{:status :pending, :val nil} 0x56b182ed]
-(test)
-;; => 1000102
+    (test 1)))
+;; => #future[{:status :pending, :val nil} 0x5aa70338]
+(test 0)
+;; => 1000110
 
 (defn do-something [box new]
   (when new
     (with-all-p box
       ;; even within a function we can access the vars
       (set y new))))
+;; => #'pandora.core-test/do-something
 
 (do-something test 150)
 ;; => 150
@@ -35,8 +37,11 @@
 (let [x 100]
   (with-all-p test
     (set y x))
-  (p-eval test 'y))
-;; => 100
+  (p-eval test
+          '(do
+             (print y)
+             (set y 1000))))
+;; => 1000
 
 (with-all-p test
   (print y))

@@ -1,0 +1,62 @@
+* Pandora
+A Macro Utility Library for Clojure that provides a way to define functions with a lexical scope that can be `opened`. Based on the book, Let over Lambda by Doug Hoyte.
+
+* Getting Started
+
+Add the following to your `project.clj` file:
+
+#+BEGIN_SRC clojure
+:dependencies [[pandora "0.1.0"]]
+#+END_SRC
+
+* Usage
+
+#+BEGIN_SRC clojure
+  (ns pandora.example
+    (:require [pandora.core :refer :all]))
+
+  (defp test [x]
+    [y 100] ; y is a pandoric variable
+    (set y (+ y x))) ;; set can be used within the scope of the `defp` macro
+  ;; => #'pandora.core-test/test
+
+  (test 10)
+  ;; => 110
+
+  ;; Values are stored and set within atoms, which means they are thread safe
+  (future
+    (dotimes [x 1000000]
+      (test 1)))
+  ;; => #future[{:status :pending, :val nil} 0x5aa70338]
+  (test 0)
+  ;; => 1000110
+
+  ;; pandoric scopes can be passed and accessed from inside other functions
+  (defn do-something [scope new]
+    (when new
+      (with-all-p scope
+        ;; even within a function we can access the vars
+        (set y new))))
+  ;; => #'pandora.core-test/do-something
+
+  (do-something test 150)
+  ;; => 150
+
+  (with-all-p test
+    y)
+  ;; => 150
+
+  (test :pget-all)
+  ;; => (y 150)
+
+  ;; they can also be used to create an eval-tunnel, which allows you to evaluate code within the scope of the pandoric function
+  (let [x 100]
+    (with-all-p test
+      (set y x))
+    (p-eval test
+            '(do
+               (print y)
+               (set y 1000))))
+  ;; => 1000
+#+END_SRC
+  

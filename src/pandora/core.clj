@@ -278,7 +278,7 @@
   --------------------------------------------------------------------------------
   Pandoric Function Definition
   --------------------------------------------------------------------------------
-  A macro that provides a way to define a function with lexical bindings.
+  A macro that provides a way to define a function with pandoric bindings.
   Similar to defn, but with an implicit pandoric lambda function.
   "
   [name lambda-args pan-args & body]
